@@ -1,0 +1,9 @@
+{
+  "appId": "com.ghostjump.game",
+  "appName": "The Ghost Jump",
+  "webDir": ".",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}

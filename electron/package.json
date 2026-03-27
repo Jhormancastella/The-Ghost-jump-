@@ -1,0 +1,14 @@
+{
+  "name": "the-ghost-jump",
+  "version": "1.0.0",
+  "description": "The Ghost Jump - Windows Version",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-packager . The-Ghost-Jump --platform=win32 --arch=x64 --out=../dist/exe --overwrite"
+  },
+  "devDependencies": {
+    "electron": "^25.0.0",
+    "electron-packager": "^17.1.1"
+  }
+}
