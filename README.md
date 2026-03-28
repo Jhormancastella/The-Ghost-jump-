@@ -72,4 +72,3 @@ El juego incluye un `SoundManager` que gestiona:
 Este proyecto es de código abierto. ¡Siéntete libre de mejorarlo!
 
 ---
-Desarrollado con ❤️ por Trae Code Assistant.
