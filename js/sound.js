@@ -4,15 +4,13 @@ class SoundManager {
         this.music = null;
         this.isMusicPlaying = false;
         
-        // Load sounds (placeholders for now, user should add files to assets/sounds/)
-        this.loadSound('jump', 'assets/sounds/jump.mp3');
-        this.loadSound('coin', 'assets/sounds/coin.mp3');
-        this.loadSound('powerup', 'assets/sounds/powerup.mp3');
-        this.loadSound('gameover', 'assets/sounds/gameover.mp3');
-        this.loadSound('hit', 'assets/sounds/hit.mp3');
+        this.loadSound('jump',     'https://res.cloudinary.com/dipv76dpn/video/upload/v1774738391/jump_snm83q.wav');
+        this.loadSound('coin',     'https://res.cloudinary.com/dipv76dpn/video/upload/v1774738333/coin_kp3l5o.wav');
+        this.loadSound('powerup',  'https://res.cloudinary.com/dipv76dpn/video/upload/v1774738391/powerup_vsyhsu.wav');
+        this.loadSound('gameover', 'https://res.cloudinary.com/dipv76dpn/video/upload/v1774738391/gameover_rnmha2.wav');
+        this.loadSound('hit',      'https://res.cloudinary.com/dipv76dpn/video/upload/v1774738391/hit_o7c1cg.wav');
         
-        // Background music
-        this.music = new Audio('assets/sounds/background_music.mp3');
+        this.music = new Audio('https://res.cloudinary.com/dipv76dpn/video/upload/v1774738392/background_music_a2pqd9.mp3');
         this.music.loop = true;
     }
 

@@ -23,19 +23,33 @@
     <canvas id="gameCanvas"></canvas>
     
     <div class="game-hud hidden" id="gameHud">
-        <div class="hud-left">
+        <!-- Mobile rows / Desktop: display:contents makes children flow into HUD flex column -->
+        <div class="hud-top-row">
             <div class="hud-item score" id="scoreDisplay">🏆 0</div>
-            <div class="hud-item coins" id="coinsDisplay">🪙 0</div>
+            <div class="hud-item powerup" id="powerupDisplay">❤️2  🛡️0</div>
         </div>
-        <div class="hud-right">
-            <div class="hud-item" id="powerupDisplay">❤️ 2 | 🛡️ 0 | ⚡ --</div>
+        <div class="hud-bottom-row">
+            <div class="hud-item coins" id="coinsDisplay"><span class="coin-icon"></span><span id="coinsValue">0</span></div>
+            <div class="biome-indicator hidden" id="biomeIndicator">🌌 Noche</div>
+            <div class="sensor-indicator hidden" id="sensorIndicator">📱 Tilt OFF</div>
         </div>
-        
-        <!-- Desktop specific elements that get moved by CSS -->
-        <div class="biome-indicator hidden" id="biomeIndicator">🌌 Noche</div>
-        <div class="sensor-indicator hidden" id="sensorIndicator">📱 Tilt OFF</div>
+        <!-- Desktop stat row: hp / armor / boost shown separately -->
+        <div class="hud-stat-row" id="hudStatRow">
+            <div class="hud-stat" id="hudHp">❤️ 2</div>
+            <div class="hud-stat" id="hudArmor">🛡️ 0</div>
+            <div class="hud-stat boost" id="hudBoost">⚡ --</div>
+        </div>
+        <!-- Desktop only extras -->
+        <div class="desktop-controls-hint" id="desktopControlsHint">
+            <div class="hint-title" data-i18n="controlsHint">⌨️ CONTROLES</div>
+            <div class="hint-row"><kbd>← →</kbd><span data-i18n="keyMove">Mover</span></div>
+            <div class="hint-row"><kbd>P</kbd> / <kbd>Esc</kbd><span data-i18n="keyPause">Pausar</span></div>
+            <div class="hint-row"><kbd>↑</kbd> / <kbd>↓</kbd><span data-i18n="keyNav">Navegar menú</span></div>
+            <div class="hint-row"><kbd>Enter</kbd><span data-i18n="keyConfirm">Confirmar</span></div>
+        </div>
+        <button class="desktop-pause-btn" onclick="game.togglePause()">⏸️ <span>P / Esc</span></button>
     </div>
-    
+
     <button class="pause-btn hidden" id="pauseBtn" onclick="game.togglePause()">⏸️</button>
     
     <div class="touch-controls hidden" id="touchControls">
@@ -52,8 +66,8 @@
         <h1 class="game-title" data-i18n="title">THE GHOST JUMP</h1>
         <p class="game-subtitle" data-i18n="subtitle">El Fantasma Saltador</p>
         
-        <button class="menu-btn primary" onclick="showScreen('singlePlayerMenu')">
-            <span data-i18n="start">🎮 INICIAR</span>
+        <button class="menu-btn primary" onclick="showScreen('playMenu')">
+            <span data-i18n="newGame">🎮 NUEVA PARTIDA</span>
         </button>
         <button class="menu-btn secondary" onclick="showScreen('multiplayerMenu')">
             <span data-i18n="multiplayer">🌐 MULTIJUGADOR</span>
@@ -61,6 +75,26 @@
         <button class="menu-btn tertiary" onclick="showScreen('settingsMenu')">
             <span data-i18n="settings">⚙️ AJUSTES</span>
         </button>
+    </div>
+
+    <!-- Play Menu: Iniciar + Skins (si desbloqueado) -->
+    <div class="submenu hidden" id="playMenu">
+        <button class="back-btn" onclick="showScreen('mainMenu')">←</button>
+        <h2 class="submenu-title" data-i18n="newGame">🎮 NUEVA PARTIDA</h2>
+        <button class="menu-btn primary" onclick="showScreen('singlePlayerMenu')">
+            <span data-i18n="start">▶ INICIAR</span>
+        </button>
+        <button class="menu-btn skins-btn hidden" id="skinsMenuBtn" onclick="showScreen('skinsMenu')">
+            <span data-i18n="skins">👻 SKINS</span>
+        </button>
+        <p class="skins-locked-hint hidden" id="skinsLockedHint" data-i18n="skinsLocked">🔒 Consigue 100 monedas para desbloquear Skins</p>
+    </div>
+
+    <!-- Skins Menu -->
+    <div class="submenu hidden" id="skinsMenu">
+        <button class="back-btn" onclick="showScreen('playMenu')">←</button>
+        <h2 class="submenu-title" data-i18n="skins">👻 SKINS</h2>
+        <p class="skins-coming" data-i18n="skinsComingSoon">✨ Nuevas skins próximamente...</p>
     </div>
     
     <div class="submenu hidden" id="singlePlayerMenu">
@@ -186,6 +220,7 @@
         <h2 class="pause-title" data-i18n="pause">⏸️ PAUSA</h2>
         <button class="menu-btn primary" onclick="game.togglePause()"><span data-i18n="continue">▶ CONTINUAR</span></button>
         <button class="menu-btn secondary" onclick="game.restartGame()"><span data-i18n="restart">🔄 REINICIAR</span></button>
+        <button class="menu-btn settings-btn" onclick="showSettingsFromPause()"><span data-i18n="settings">⚙️ AJUSTES</span></button>
         <button class="menu-btn tertiary" onclick="game.goToMenu()"><span data-i18n="mainMenu">🏠 MENÚ PRINCIPAL</span></button>
     </div>
     

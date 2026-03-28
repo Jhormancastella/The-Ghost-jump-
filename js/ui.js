@@ -1,5 +1,7 @@
 function hideAllScreens() {
     document.getElementById('mainMenu').classList.add('hidden');
+    document.getElementById('playMenu').classList.add('hidden');
+    document.getElementById('skinsMenu').classList.add('hidden');
     document.getElementById('singlePlayerMenu').classList.add('hidden');
     document.getElementById('multiplayerMenu').classList.add('hidden');
     document.getElementById('settingsMenu').classList.add('hidden');
@@ -12,9 +14,36 @@ function hideAllScreens() {
     document.getElementById('sensorIndicator').classList.add('hidden');
 }
 
+function updateSkinsMenuVisibility() {
+    const totalCoins = parseInt(localStorage.getItem('ghostJumpTotalCoins') || '0');
+    const unlocked = totalCoins >= 100;
+    const btn = document.getElementById('skinsMenuBtn');
+    const hint = document.getElementById('skinsLockedHint');
+    if (btn) btn.classList.toggle('hidden', !unlocked);
+    if (hint) hint.classList.toggle('hidden', unlocked);
+}
+
+function showSettingsFromPause() {
+    document.getElementById('pauseScreen').classList.add('hidden');
+    document.getElementById('settingsMenu').classList.remove('hidden');
+    document.querySelectorAll('.kb-focus').forEach(el => el.classList.remove('kb-focus'));
+    if (window.game) window.game._menuFocusIndex = 0;
+    const backBtn = document.querySelector('#settingsMenu .back-btn');
+    if (backBtn) {
+        backBtn.onclick = () => {
+            document.getElementById('settingsMenu').classList.add('hidden');
+            document.getElementById('pauseScreen').classList.remove('hidden');
+            backBtn.onclick = () => showScreen('mainMenu');
+        };
+    }
+}
+
 function showScreen(screenId) {
     hideAllScreens();
     document.getElementById(screenId).classList.remove('hidden');
+    document.querySelectorAll('.kb-focus').forEach(el => el.classList.remove('kb-focus'));
+    if (window.game) window.game._menuFocusIndex = 0;
+    if (screenId === 'playMenu') updateSkinsMenuVisibility();
 }
 
 function selectDifficulty(element, difficulty) {

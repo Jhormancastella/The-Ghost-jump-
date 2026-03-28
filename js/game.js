@@ -24,6 +24,7 @@ class GhostJumpGame {
         this.reset();
         this.setupControls();
         this.loadBestScore();
+        this.loadTotalCoins();
         this.loadLanguage();
         
         this.gameLoop();
@@ -82,63 +83,47 @@ class GhostJumpGame {
     getCurrentBiome() {
         if (this.score < 150) {
             return {
+                key: 'night',
                 name: CONFIG.settings.language === 'es' ? 'Noche' : 'Night',
                 icon: '🌌',
-                bgTop: '#1a1a3e',
-                bgMid: '#2d1b4e',
-                bgBottom: '#1a1a2e',
-                platformNormalTop: '#10B981',
-                platformNormalBottom: '#059669',
-                platformBreakTop: '#D97706',
-                platformBreakBottom: '#B45309',
+                bgTop: '#1a1a3e', bgMid: '#2d1b4e', bgBottom: '#1a1a2e',
+                platformNormalTop: '#10B981', platformNormalBottom: '#059669',
+                platformBreakTop: '#D97706', platformBreakBottom: '#B45309',
                 starColor: 'rgba(255,255,255,0.5)',
-                enemyBody: '#DC2626',
-                enemyGlow: '#FCA5A5'
+                enemyBody: '#DC2626', enemyGlow: '#FCA5A5'
             };
         } else if (this.score < 350) {
             return {
+                key: 'ice',
                 name: CONFIG.settings.language === 'es' ? 'Hielo' : 'Ice',
                 icon: '❄️',
-                bgTop: '#102a43',
-                bgMid: '#2c7da0',
-                bgBottom: '#61a5c2',
-                platformNormalTop: '#60A5FA',
-                platformNormalBottom: '#2563EB',
-                platformBreakTop: '#93C5FD',
-                platformBreakBottom: '#3B82F6',
+                bgTop: '#102a43', bgMid: '#2c7da0', bgBottom: '#61a5c2',
+                platformNormalTop: '#60A5FA', platformNormalBottom: '#2563EB',
+                platformBreakTop: '#93C5FD', platformBreakBottom: '#3B82F6',
                 starColor: 'rgba(220,240,255,0.65)',
-                enemyBody: '#0EA5E9',
-                enemyGlow: '#BAE6FD'
+                enemyBody: '#0EA5E9', enemyGlow: '#BAE6FD'
             };
         } else if (this.score < 600) {
             return {
+                key: 'lava',
                 name: CONFIG.settings.language === 'es' ? 'Lava' : 'Lava',
                 icon: '🌋',
-                bgTop: '#3b0a0a',
-                bgMid: '#7f1d1d',
-                bgBottom: '#dc2626',
-                platformNormalTop: '#F97316',
-                platformNormalBottom: '#C2410C',
-                platformBreakTop: '#F59E0B',
-                platformBreakBottom: '#B45309',
+                bgTop: '#3b0a0a', bgMid: '#7f1d1d', bgBottom: '#dc2626',
+                platformNormalTop: '#F97316', platformNormalBottom: '#C2410C',
+                platformBreakTop: '#F59E0B', platformBreakBottom: '#B45309',
                 starColor: 'rgba(255,180,120,0.45)',
-                enemyBody: '#7F1D1D',
-                enemyGlow: '#FCA5A5'
+                enemyBody: '#7F1D1D', enemyGlow: '#FCA5A5'
             };
         } else {
             return {
+                key: 'sky',
                 name: CONFIG.settings.language === 'es' ? 'Cielo' : 'Sky',
                 icon: '☁️',
-                bgTop: '#dbeafe',
-                bgMid: '#93c5fd',
-                bgBottom: '#60a5fa',
-                platformNormalTop: '#EDE9FE',
-                platformNormalBottom: '#A78BFA',
-                platformBreakTop: '#FDE68A',
-                platformBreakBottom: '#F59E0B',
+                bgTop: '#dbeafe', bgMid: '#93c5fd', bgBottom: '#60a5fa',
+                platformNormalTop: '#EDE9FE', platformNormalBottom: '#A78BFA',
+                platformBreakTop: '#FDE68A', platformBreakBottom: '#F59E0B',
                 starColor: 'rgba(255,255,255,0.85)',
-                enemyBody: '#8B5CF6',
-                enemyGlow: '#DDD6FE'
+                enemyBody: '#8B5CF6', enemyGlow: '#DDD6FE'
             };
         }
     }
@@ -187,12 +172,15 @@ class GhostJumpGame {
         };
         
         if (Math.random() < this.diffConfig.enemyProb && width > 60) {
+            const biome = this.getCurrentBiome();
+            const useSprite = biome.key !== 'night';
+            const eSize = useSprite ? 38 : 24;
             platform.enemy = {
-                offsetX: width / 2 - 12,
+                offsetX: width / 2 - eSize / 2,
                 direction: Math.random() < 0.5 ? 1 : -1,
                 speed: this.diffConfig.enemySpeed + Math.random() * 0.8,
-                width: 24,
-                height: 24
+                width: eSize,
+                height: eSize
             };
         }
         
@@ -635,29 +623,49 @@ class GhostJumpGame {
     drawEnemy(x, y, enemy) {
         const ctx = this.ctx;
         const biome = this.getCurrentBiome();
-        
+        const img = _enemyImgs[biome.key];
+        const w = enemy.width;
+        const h = enemy.height;
+
+        // Sprite-based enemies (ice=lechuga, lava=tomate, sky=cebolla)
+        if (img && img.complete && img.naturalWidth > 0) {
+            const bounce = Math.sin(Date.now() / 250) * 2;
+            ctx.save();
+            // Flip horizontally when moving left
+            if (enemy.direction < 0) {
+                ctx.translate(x + w / 2, y + h / 2 + bounce);
+                ctx.scale(-1, 1);
+                ctx.drawImage(img, -w / 2, -h / 2, w, h);
+            } else {
+                ctx.drawImage(img, x, y + bounce, w, h);
+            }
+            ctx.restore();
+            return;
+        }
+
+        // Fallback: original slime (night biome)
         ctx.fillStyle = biome.enemyBody;
         ctx.beginPath();
-        ctx.ellipse(x + enemy.width / 2, y + enemy.height - 8, enemy.width / 2, enemy.height / 2.5, 0, 0, Math.PI * 2);
+        ctx.ellipse(x + w / 2, y + h - 8, w / 2, h / 2.5, 0, 0, Math.PI * 2);
         ctx.fill();
-        
+
         ctx.fillStyle = biome.enemyGlow;
         ctx.beginPath();
-        ctx.ellipse(x + enemy.width / 2 - 4, y + enemy.height - 14, 4, 3, -0.3, 0, Math.PI * 2);
+        ctx.ellipse(x + w / 2 - 4, y + h - 14, 4, 3, -0.3, 0, Math.PI * 2);
         ctx.fill();
-        
+
         ctx.fillStyle = '#000';
         ctx.beginPath();
-        ctx.arc(x + 8, y + enemy.height - 10, 3, 0, Math.PI * 2);
-        ctx.arc(x + 16, y + enemy.height - 10, 3, 0, Math.PI * 2);
+        ctx.arc(x + 8, y + h - 10, 3, 0, Math.PI * 2);
+        ctx.arc(x + 16, y + h - 10, 3, 0, Math.PI * 2);
         ctx.fill();
-        
+
         const dx = this.player.x - x;
         const offsetX = Math.sign(dx) * 1;
         ctx.fillStyle = '#FFF';
         ctx.beginPath();
-        ctx.arc(x + 8 + offsetX, y + enemy.height - 10, 1.5, 0, Math.PI * 2);
-        ctx.arc(x + 16 + offsetX, y + enemy.height - 10, 1.5, 0, Math.PI * 2);
+        ctx.arc(x + 8 + offsetX, y + h - 10, 1.5, 0, Math.PI * 2);
+        ctx.arc(x + 16 + offsetX, y + h - 10, 1.5, 0, Math.PI * 2);
         ctx.fill();
     }
     
@@ -831,16 +839,31 @@ class GhostJumpGame {
     
     updateHUD() {
         document.getElementById('scoreDisplay').textContent = `🏆 ${this.score}`;
-        document.getElementById('coinsDisplay').textContent = `🪙 ${this.coinsCollected}`;
-        
-        let powerupText = `❤️ ${this.player.hp} | 🛡️ ${this.armor}`;
-        if (this.jumpBoostActive) {
-            const seconds = (this.boostTimer / 60).toFixed(1);
-            powerupText += ` | ⚡ ${seconds}s`;
-        } else {
-            powerupText += ' | ⚡ --';
+
+        // Coin icon + value
+        const coinsVal = document.getElementById('coinsValue');
+        if (coinsVal) coinsVal.textContent = this.coinsCollected;
+
+        const hp = this.player.hp;
+        const armor = this.armor;
+        const boostSecs = this.jumpBoostActive ? (this.boostTimer / 60).toFixed(1) + 's' : '--';
+
+        // Desktop separate stats
+        const hpEl    = document.getElementById('hudHp');
+        const armorEl = document.getElementById('hudArmor');
+        const boostEl = document.getElementById('hudBoost');
+        if (hpEl)    hpEl.textContent    = `❤️ ${hp}`;
+        if (armorEl) armorEl.textContent = `🛡️ ${armor}`;
+        if (boostEl) {
+            boostEl.textContent  = `⚡ ${boostSecs}`;
+            boostEl.style.opacity = this.jumpBoostActive ? '1' : '0.4';
         }
-        document.getElementById('powerupDisplay').textContent = powerupText;
+
+        // Mobile combined
+        const powerupEl = document.getElementById('powerupDisplay');
+        if (powerupEl) {
+            powerupEl.textContent = `❤️${hp}  🛡️${armor}${this.jumpBoostActive ? `  ⚡${boostSecs}` : ''}`;
+        }
     }
 
     updateBiomeUI() {
@@ -875,6 +898,8 @@ class GhostJumpGame {
         if (this.state === 'playing') {
             this.state = 'paused';
             document.getElementById('pauseScreen').classList.remove('hidden');
+            document.querySelectorAll('.kb-focus').forEach(el => el.classList.remove('kb-focus'));
+            this._menuFocusIndex = 0;
             window.soundManager.stopMusic();
         } else if (this.state === 'paused') {
             this.state = 'playing';
@@ -893,6 +918,11 @@ class GhostJumpGame {
             this.saveBestScore();
         }
 
+        // Accumulate total coins
+        this.totalCoins += this.coinsCollected;
+        this.saveTotalCoins();
+        updateSkinsMenuVisibility();
+
         document.getElementById('gameoverTitle').textContent = fromVoid ? t('gameOverVoid') : t('gameOverExploded');
         document.getElementById('gameoverGhostImg').src = fromVoid ? GHOST_NORMAL_SRC : GHOST_EXPLODED_SRC;
         
@@ -907,6 +937,8 @@ class GhostJumpGame {
         document.getElementById('biomeIndicator').classList.add('hidden');
         document.getElementById('sensorIndicator').classList.add('hidden');
         document.getElementById('gameoverScreen').classList.remove('hidden');
+        document.querySelectorAll('.kb-focus').forEach(el => el.classList.remove('kb-focus'));
+        this._menuFocusIndex = 0;
         
         window.soundManager.stopMusic();
         if (fromVoid) window.soundManager.play('gameover');
@@ -933,6 +965,14 @@ class GhostJumpGame {
         localStorage.setItem('ghostJumpBest', this.bestScore.toString());
     }
 
+    loadTotalCoins() {
+        this.totalCoins = parseInt(localStorage.getItem('ghostJumpTotalCoins') || '0');
+    }
+
+    saveTotalCoins() {
+        localStorage.setItem('ghostJumpTotalCoins', this.totalCoins.toString());
+    }
+
     setMotionControl(enabled) {
         CONFIG.settings.motionControl = enabled;
         updateSensorIndicator();
@@ -947,18 +987,60 @@ class GhostJumpGame {
     }
     
     setupControls() {
+        // --- Menu keyboard navigation ---
+        this._menuFocusIndex = 0;
+
+        const getMenuButtons = () => {
+            const screens = ['mainMenu','playMenu','skinsMenu','singlePlayerMenu','multiplayerMenu','settingsMenu','pauseScreen','gameoverScreen'];
+            for (const id of screens) {
+                const el = document.getElementById(id);
+                if (el && !el.classList.contains('hidden')) {
+                    return Array.from(el.querySelectorAll('button:not(.back-btn), .difficulty-option'));
+                }
+            }
+            return [];
+        };
+
+        const moveFocus = (dir) => {
+            const btns = getMenuButtons();
+            if (!btns.length) return;
+            btns.forEach(b => b.classList.remove('kb-focus'));
+            this._menuFocusIndex = (this._menuFocusIndex + dir + btns.length) % btns.length;
+            btns[this._menuFocusIndex].classList.add('kb-focus');
+            btns[this._menuFocusIndex].scrollIntoView({ block: 'nearest' });
+        };
+
+        const confirmFocus = () => {
+            const btns = getMenuButtons();
+            if (!btns.length) return;
+            const btn = btns[this._menuFocusIndex];
+            if (btn) btn.click();
+        };
+
         window.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-                this.keys.left = true;
+                if (this.state === 'playing') this.keys.left = true;
             }
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-                this.keys.right = true;
+                if (this.state === 'playing') this.keys.right = true;
             }
             if (e.key === 'Escape' && this.state === 'playing') {
                 this.togglePause();
             }
             if ((e.key === 'p' || e.key === 'P') && (this.state === 'playing' || this.state === 'paused')) {
                 this.togglePause();
+            }
+            if ((e.key === 'Enter' || e.key === ' ') && this.state !== 'playing') {
+                e.preventDefault();
+                confirmFocus();
+            }
+            if (e.key === 'ArrowUp' && this.state !== 'playing') {
+                e.preventDefault();
+                moveFocus(-1);
+            }
+            if (e.key === 'ArrowDown' && this.state !== 'playing') {
+                e.preventDefault();
+                moveFocus(1);
             }
         });
         
@@ -1041,6 +1123,7 @@ window.addEventListener('load', () => {
     game = new GhostJumpGame();
     updateSettings();
     applyTranslations();
+    updateSkinsMenuVisibility();
     const gameoverImg = document.getElementById('gameoverGhostImg');
     if (gameoverImg) gameoverImg.src = GHOST_NORMAL_SRC;
 });
